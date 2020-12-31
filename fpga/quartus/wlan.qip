@@ -1,0 +1,26 @@
+# Altera FFT IP
+set_global_assignment -name QIP_FILE [file normalize "../../../../../bladeRF-wiphy/fpga/ip/altera/fft64/fft64/synthesis/fft64.qip"]
+set_global_assignment -name QIP_FILE [file normalize "../../../../../bladeRF-wiphy/fpga/ip/altera/viterbi_decoder/viterbi_decoder/synthesis/viterbi_decoder.qip"]
+set_global_assignment -library "wlan_pll" -name VERILOG_FILE [file normalize "../../../../../bladeRF-wiphy/fpga/ip/altera/wlan_pll/wlan_pll/wlan_pll.v"]
+set_global_assignment -library "wlan_pll" -name QIP_FILE [file normalize "../../../../../bladeRF-wiphy/fpga/ip/altera/wlan_pll/wlan_pll/wlan_pll.qip"]
+
+set modelsim 0
+
+# Nuand WLAN IP files
+source [file normalize [file join $::quartus(qip_path) ../common/wlan_files.tcl]]
+foreach f $wlan_common {
+    set_global_assignment -library "wlan" -name VHDL_FILE [file normalize [file join $::quartus(qip_path) $f]] -hdl_version VHDL_2008
+}
+
+foreach f $wlan_synthesis_tx {
+    set_global_assignment -library "wlan" -name VHDL_FILE [file normalize [file join $::quartus(qip_path) $f]] -hdl_version VHDL_2008
+}
+
+foreach f $wlan_synthesis_rx {
+    set_global_assignment -library "wlan" -name VHDL_FILE [file normalize [file join $::quartus(qip_path) $f]] -hdl_version VHDL_2008
+}
+
+foreach f $wlan_synthesis_top {
+    set_global_assignment -library "wlan" -name VHDL_FILE [file normalize [file join $::quartus(qip_path) $f]] -hdl_version VHDL_2008
+}
+
