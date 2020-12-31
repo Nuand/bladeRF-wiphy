@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags="INTERNAL_COMPONENT=true"
+   categories="System" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element viterbi_ii_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="deviceSpeedGrade" value="8" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="true" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VHDL" />
+ <parameter name="hideFromIPCatalog" value="true" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface name="clk" internal="viterbi_ii_0.clk" type="clock" dir="end">
+  <port name="clk" internal="clk" />
+ </interface>
+ <interface name="in" internal="viterbi_ii_0.in" type="conduit" dir="end">
+  <port name="sink_val" internal="sink_val" />
+  <port name="sink_rdy" internal="sink_rdy" />
+  <port name="eras_sym" internal="eras_sym" />
+  <port name="rr" internal="rr" />
+ </interface>
+ <interface name="out" internal="viterbi_ii_0.out" type="conduit" dir="end">
+  <port name="source_val" internal="source_val" />
+  <port name="source_rdy" internal="source_rdy" />
+  <port name="normalizations" internal="normalizations" />
+  <port name="decbit" internal="decbit" />
+ </interface>
+ <interface name="rst" internal="viterbi_ii_0.rst" type="reset" dir="end">
+  <port name="reset" internal="reset" />
+ </interface>
+ <module
+   name="viterbi_ii_0"
+   kind="altera_viterbi_ii"
+   version="19.1"
+   enabled="1"
+   autoexport="1">
+  <parameter name="BSF" value="1" />
+  <parameter name="FMAX" value="80.0" />
+  <parameter name="ISBER" value="0" />
+  <parameter name="ISOCTAL" value="Decimal" />
+  <parameter name="L" value="7" />
+  <parameter name="NODESYNC" value="0" />
+  <parameter name="acs_units" value="1" />
+  <parameter name="dec_mode" value="V" />
+  <parameter name="design_env" value="NATIVE" />
+  <parameter name="ga" value="91" />
+  <parameter name="gb" value="121" />
+  <parameter name="gc" value="0" />
+  <parameter name="gd" value="0" />
+  <parameter name="ge" value="0" />
+  <parameter name="gf" value="0" />
+  <parameter name="gg" value="0" />
+  <parameter name="n" value="2" />
+  <parameter name="ncodes" value="1" />
+  <parameter name="parallel_optimization" value="Continuous" />
+  <parameter name="selected_device_family" value="Cyclone V" />
+  <parameter name="softbits" value="8" />
+  <parameter name="v" value="42" />
+  <parameter name="viterbi_type" value="Parallel" />
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

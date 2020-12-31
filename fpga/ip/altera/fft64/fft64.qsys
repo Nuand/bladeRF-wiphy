@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags="INTERNAL_COMPONENT=true"
+   categories="" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element fft_ii_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="deviceSpeedGrade" value="8" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VHDL" />
+ <parameter name="hideFromIPCatalog" value="true" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface name="clk" internal="fft_ii_0.clk" type="clock" dir="end">
+  <port name="clk" internal="clk" />
+ </interface>
+ <interface name="rst" internal="fft_ii_0.rst" type="reset" dir="end">
+  <port name="reset_n" internal="reset_n" />
+ </interface>
+ <interface name="sink" internal="fft_ii_0.sink" type="conduit" dir="end">
+  <port name="sink_valid" internal="sink_valid" />
+  <port name="sink_ready" internal="sink_ready" />
+  <port name="sink_error" internal="sink_error" />
+  <port name="sink_sop" internal="sink_sop" />
+  <port name="sink_eop" internal="sink_eop" />
+  <port name="sink_real" internal="sink_real" />
+  <port name="sink_imag" internal="sink_imag" />
+  <port name="fftpts_in" internal="fftpts_in" />
+  <port name="inverse" internal="inverse" />
+ </interface>
+ <interface name="source" internal="fft_ii_0.source" type="conduit" dir="end">
+  <port name="source_valid" internal="source_valid" />
+  <port name="source_ready" internal="source_ready" />
+  <port name="source_error" internal="source_error" />
+  <port name="source_sop" internal="source_sop" />
+  <port name="source_eop" internal="source_eop" />
+  <port name="source_real" internal="source_real" />
+  <port name="source_imag" internal="source_imag" />
+  <port name="fftpts_out" internal="fftpts_out" />
+ </interface>
+ <module
+   name="fft_ii_0"
+   kind="altera_fft_ii"
+   version="19.1"
+   enabled="1"
+   autoexport="1">
+  <parameter name="data_flow" value="Variable Streaming" />
+  <parameter name="data_rep" value="Fixed Point" />
+  <parameter name="design_env" value="NATIVE" />
+  <parameter name="direction" value="Bi-directional" />
+  <parameter name="dsp_resource_opt" value="false" />
+  <parameter name="engine_arch" value="Quad Output" />
+  <parameter name="hard_fp" value="false" />
+  <parameter name="hyper_opt" value="false" />
+  <parameter name="in_order" value="Natural" />
+  <parameter name="in_width" value="16" />
+  <parameter name="length" value="64" />
+  <parameter name="num_engines" value="1" />
+  <parameter name="out_order" value="Natural" />
+  <parameter name="out_width" value="23" />
+  <parameter name="selected_device_family" value="Cyclone V" />
+  <parameter name="twid_width" value="24" />
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>
