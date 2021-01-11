@@ -51,8 +51,8 @@ architecture arch of wlan_ifft64 is
     signal source_eop   :   std_logic ;
     signal source_valid :   std_logic ;
     signal source_ready :   std_logic ;
-    signal source_real  :   std_logic_vector(22 downto 0) ;
-    signal source_imag  :   std_logic_vector(22 downto 0) ;
+    signal source_real  :   std_logic_vector(15 downto 0) ;
+    signal source_imag  :   std_logic_vector(15 downto 0) ;
     signal source_error :   std_logic_vector(1 downto 0) ;
 
     signal cp_valid     :   std_logic ;
@@ -81,28 +81,51 @@ begin
 
     ifft_ready <= '0' when ( source_eop = '1' or ready = '0' or inflight >= 2 or cooldown > 0) else '1' ;
 
-    U_ifft64 : entity fft64.fft64
-      port map (
-        clk             =>  clock,
-        reset_n         =>  not(reset),
-        fftpts_in       =>  std_logic_vector(to_unsigned(64,7)),
-        inverse         =>  "1",
-        sink_sop        =>  sink_sop,
-        sink_eop        =>  sink_eop,
-        sink_valid      =>  sink_valid,
-        sink_real       =>  sink_real,
-        sink_imag       =>  sink_imag,
-        sink_error      =>  sink_error,
-        source_ready    =>  source_ready,
-        fftpts_out      =>  open,
-        sink_ready      =>  sink_ready,
-        source_error    =>  source_error,
-        source_sop      =>  source_sop,
-        source_eop      =>  source_eop,
-        source_valid    =>  source_valid,
-        source_real     =>  source_real,
-        source_imag     =>  source_imag
-      ) ;
+    U_ifft64 : entity work.fft(mult)
+      generic map(
+        N     => 64,
+        BITS  => 16
+      ) port map (
+        clock     =>  clock,
+        reset     =>  reset,
+
+        inverse   =>  '1',
+        in_real   =>  std_logic_vector(sink_real),
+        in_imag   =>  std_logic_vector(sink_imag),
+        in_valid  =>  sink_valid,
+        in_sop    =>  sink_sop,
+        in_eop    =>  sink_eop,
+
+        out_real  =>  source_real,
+        out_imag  =>  source_imag,
+        out_error =>  open,
+        out_valid =>  source_valid,
+        out_sop   =>  source_sop,
+        out_eop   =>  source_eop
+      );
+
+--    U_ifft64 : entity fft64.fft64
+--      port map (
+--        clk             =>  clock,
+--        reset_n         =>  not(reset),
+--        fftpts_in       =>  std_logic_vector(to_unsigned(64,7)),
+--        inverse         =>  "1",
+--        sink_sop        =>  sink_sop,
+--        sink_eop        =>  sink_eop,
+--        sink_valid      =>  sink_valid,
+--        sink_real       =>  sink_real,
+--        sink_imag       =>  sink_imag,
+--        sink_error      =>  sink_error,
+--        source_ready    =>  source_ready,
+--        fftpts_out      =>  open,
+--        sink_ready      =>  sink_ready,
+--        source_error    =>  source_error,
+--        source_sop      =>  source_sop,
+--        source_eop      =>  source_eop,
+--        source_valid    =>  source_valid,
+--        source_real     =>  source_real,
+--        source_imag     =>  source_imag
+--      ) ;
 
     present_output : process(clock, reset)
         variable cp_down : natural range 0 to 48 ;
@@ -144,8 +167,8 @@ begin
             end if ;
 
             if( source_valid = '1' ) then
-                ifft_sample.i <= resize(shift_right(signed(source_real)+8,4),ifft_sample.i'length) ;
-                ifft_sample.q <= resize(shift_right(signed(source_imag)+8,4),ifft_sample.q'length) ;
+                ifft_sample.i <= resize(shift_left(signed(source_real)+8,2),ifft_sample.i'length) ;
+                ifft_sample.q <= resize(shift_left(signed(source_imag)+8,2),ifft_sample.q'length) ;
                 if( cp_down = 0 ) then
                     cp_valid <= '1' ;
                 end if ;

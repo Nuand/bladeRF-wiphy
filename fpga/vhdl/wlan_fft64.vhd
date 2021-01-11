@@ -58,8 +58,8 @@ architecture arch of wlan_fft64 is
     signal source_eop   :   std_logic ;
     signal source_valid :   std_logic ;
     signal source_ready :   std_logic ;
-    signal source_real  :   std_logic_vector(22 downto 0) ;
-    signal source_imag  :   std_logic_vector(22 downto 0) ;
+    signal source_real  :   std_logic_vector(15 downto 0) ;
+    signal source_imag  :   std_logic_vector(15 downto 0) ;
     signal source_error :   std_logic_vector(1 downto 0) ;
 
 
@@ -261,28 +261,51 @@ begin
         end if ;
     end process ;
 
-    U_fft64 : entity fft64.fft64
-      port map (
-        clk             =>  clock,
-        reset_n         =>  not(reset),
-        fftpts_in       =>  std_logic_vector(to_unsigned(64,7)),
-        inverse         =>  "0",
-        sink_sop        =>  sink_sop_r,
-        sink_eop        =>  sink_eop_r,
-        sink_valid      =>  fifo_read_r,
-        sink_real       =>  std_logic_vector(corrected_i),
-        sink_imag       =>  std_logic_vector(corrected_q),
-        sink_error      =>  sink_error,
-        source_ready    =>  source_ready,
-        fftpts_out      =>  open,
-        sink_ready      =>  sink_ready,
-        source_error    =>  source_error,
-        source_sop      =>  source_sop,
-        source_eop      =>  source_eop,
-        source_valid    =>  source_valid,
-        source_real     =>  source_real,
-        source_imag     =>  source_imag
-      ) ;
+--    U_fft64 : entity fft64.fft64
+--      port map (
+--        clk             =>  clock,
+--        reset_n         =>  not(reset),
+--        fftpts_in       =>  std_logic_vector(to_unsigned(64,7)),
+--        inverse         =>  "0",
+--        sink_sop        =>  sink_sop_r,
+--        sink_eop        =>  sink_eop_r,
+--        sink_valid      =>  fifo_read_r,
+--        sink_real       =>  std_logic_vector(corrected_i),
+--        sink_imag       =>  std_logic_vector(corrected_q),
+--        sink_error      =>  sink_error,
+--        source_ready    =>  source_ready,
+--        fftpts_out      =>  open,
+--        sink_ready      =>  sink_ready,
+--        source_error    =>  source_error,
+--        source_sop      =>  source_sop,
+--        source_eop      =>  source_eop,
+--        source_valid    =>  source_valid,
+--        source_real     =>  source_real,
+--        source_imag     =>  source_imag
+--      ) ;
+
+      U_fft64 : entity work.fft(mult)
+        generic map(
+          N     => 64,
+          BITS  => 16
+        ) port map (
+          clock     =>  clock,
+          reset     =>  reset,
+
+          inverse   =>  '0',
+          in_real   =>  std_logic_vector(corrected_i),
+          in_imag   =>  std_logic_vector(corrected_q),
+          in_valid  =>  fifo_read_r,
+          in_sop    =>  sink_sop_r,
+          in_eop    =>  sink_eop_r,
+
+          out_real  =>  source_real,
+          out_imag  =>  source_imag,
+          out_error =>  open,
+          out_valid =>  source_valid,
+          out_sop   =>  source_sop,
+          out_eop   =>  source_eop
+        );
 
     present_output : process(clock, reset)
     begin
