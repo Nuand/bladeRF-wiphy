@@ -1,0 +1,9 @@
+vcom -work work -2008 ../viterbi_p.vhd
+vcom -work work -2008 ../tracer.vhd
+vcom -work work -2008 ../comp2.vhd
+vcom -work work -2008 ../r2_comparator.vhd
+vcom -work work -2008 ../branch_compare.vhd
+vcom -work work -2008 ../traceback.vhd
+vcom -work work -2008 ../viterbi_decoder.vhd
+vcom -work work -2008 viterbi_decoder_tb.vhd
+vcom -work work -2008 r2_comparator_tb.vhd
