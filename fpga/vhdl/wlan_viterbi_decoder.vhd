@@ -84,6 +84,14 @@ architecture arch of wlan_viterbi_decoder is
 
     signal current, future  :   state_t := NULL_STATE ;
 
+    function fix_var( x : signed(7 downto 0) ) return std_logic_vector is
+      variable ret : std_logic_vector(7 downto 0);
+    begin
+      ret(6 downto 0) := not(std_logic_vector(x(6 downto 0)));
+      ret(7) := x(7);
+      return (ret);
+    end function;
+
 begin
 
     done <= current.done ;
@@ -131,21 +139,38 @@ begin
     rr <= std_logic_vector(in_soft_a) & std_logic_vector(in_soft_b) ;
     sink_val <= in_valid ;
 
-    U_altera_decoder : entity viterbi_decoder.viterbi_decoder
-      port map (
-        clk             =>  clock,
-        reset           =>  core_reset,
+    --U_altera_decoder : entity viterbi_decoder.viterbi_decoder
+    --  port map (
+    --    clk             =>  clock,
+    --    reset           =>  core_reset,
 
-        sink_val        =>  sink_val,
-        sink_rdy        =>  sink_rdy,
-        rr              =>  rr,
-        eras_sym        =>  in_erasure,
+    --    sink_val        =>  sink_val,
+    --    sink_rdy        =>  sink_rdy,
+    --    rr              =>  rr,
+    --    eras_sym        =>  in_erasure,
 
-        source_rdy      =>  source_rdy,
-        source_val      =>  source_val,
-        decbit          =>  decbit,
-        normalizations  =>  normalizations
-      ) ;
+    --    source_rdy      =>  source_rdy,
+    --    source_val      =>  source_val,
+    --    decbit          =>  decbit,
+    --    normalizations  =>  normalizations
+    --  ) ;
+    U_vit : entity work.viterbi_decoder
+      generic map(
+         TB_LEN        => 60
+      )
+      port map(
+         clock         => clock,
+         reset         => core_reset,
+         in_a          => (fix_var(in_soft_a)),
+         in_b          => (fix_var(in_soft_b)),
+         erasure       => in_erasure(0) & in_erasure(1),
+         bsd_valid     => in_valid,
+
+         out_bit       => decbit,
+         out_valid     => source_val
+    );
+
+
 
     out_dec_bit <= decbit ;
     out_dec_valid <= source_val ;
