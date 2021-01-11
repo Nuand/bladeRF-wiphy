@@ -10,6 +10,15 @@ if { $modelsim == 1 } {
 
 set wlan_common [list \
     [file normalize [ file join $here ../vhdl/wlan_p.vhd] ]             \
+    [file normalize [ file join $here ../ip/nuand/fft/vhdl/dual_port_ram.vhd] ]    \
+    [file normalize [ file join $here ../ip/nuand/fft/vhdl/fft.vhd] ]   \
+    [file normalize [ file join $here ../ip/nuand/viterbi_decoder/vhdl/viterbi_p.vhd] ]        \
+    [file normalize [ file join $here ../ip/nuand/viterbi_decoder/vhdl/branch_compare.vhd] ]   \
+    [file normalize [ file join $here ../ip/nuand/viterbi_decoder/vhdl/comp2.vhd] ]            \
+    [file normalize [ file join $here ../ip/nuand/viterbi_decoder/vhdl/r2_comparator.vhd] ]    \
+    [file normalize [ file join $here ../ip/nuand/viterbi_decoder/vhdl/tracer.vhd] ]           \
+    [file normalize [ file join $here ../ip/nuand/viterbi_decoder/vhdl/traceback.vhd] ]        \
+    [file normalize [ file join $here ../ip/nuand/viterbi_decoder/vhdl/viterbi_decoder.vhd] ]  \
     [file normalize [ file join $here ../vhdl/wlan_tx_p.vhd] ]          \
     [file normalize [ file join $here ../vhdl/wlan_rx_p.vhd] ]          \
     [file normalize [ file join $here ../vhdl/wlan_interleaver_p.vhd] ] \
