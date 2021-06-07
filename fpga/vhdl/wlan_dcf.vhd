@@ -158,7 +158,7 @@ begin
                             future.sifs <= '1' ;
                         end if ;
                     else
-                        if( ( current.timer < current.cw_timer ) and tx_req = '1' ) then
+                        if( ( current.timer > current.cw_timer ) and tx_req = '1' ) then
                             future.cw_mask <= '1' & current.cw_mask( 7 downto 1 ) ;
                         end if ;
                         future.fsm <= IDLE ;
