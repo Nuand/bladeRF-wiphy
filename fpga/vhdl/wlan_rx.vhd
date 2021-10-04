@@ -224,6 +224,7 @@ architecture arch of wlan_rx is
     signal f_bb_q            :   signed(15 downto 0) ;
     signal rst_rr            :   std_logic_vector(2 downto 0);
     signal reset             :   std_logic ;
+    signal fifo_rst          :   std_logic ;
 begin
     rx_quiet <= not burst ;
     equalized_i <= phase_corr_sample.i( 15 downto 0 ) ;
@@ -646,6 +647,7 @@ begin
         out_done        => open
       ) ;
 
+    fifo_rst <= '1' when (rx_vector_r = "0000" and buf_params_valid = '1') else '0';
     U_rx_sample_fifo: dcfifo
       generic map (
         lpm_width       =>  8,
@@ -654,7 +656,7 @@ begin
         lpm_showahead   =>  "ON"
       )
       port map (
-        aclr            => reset,
+        aclr            => reset or fifo_rst,
 
         wrclk           => clock,
         wrreq           => buf_data_valid,
