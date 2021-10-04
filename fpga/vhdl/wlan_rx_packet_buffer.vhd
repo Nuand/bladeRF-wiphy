@@ -209,10 +209,12 @@ begin
 
         future.buf_a_reset <= '0' ;
         future.buf_b_reset <= '0' ;
+        future.buf_a_ready <= '0' ;
+        future.buf_b_ready <= '0' ;
         case current.wfsm is
             when IDLE =>
                 if( (framer_quiet_reset = '0' and in_params_valid = '1') or dsss_params_valid = '1' ) then
-                    if( current.buf_a_writing = '1' ) then
+                    if( current.buf_a_writing = '1' and fifo_a_empty = '1') then
 
                         if( dsss_params_valid = '1' ) then
                             future.buf_a_params <= dsss_params ;
@@ -220,17 +222,16 @@ begin
                             future.buf_a_params <= in_params ;
                         end if ;
 
-                        future.buf_a_ready <= '0' ;
-                    else
+                        future.wfsm <= WRITE_DATA ;
+                    elsif( current.buf_a_writing = '0' and fifo_b_empty = '1' ) then
                         if( dsss_params_valid = '1' ) then
                             future.buf_b_params <= dsss_params ;
                         else
                             future.buf_b_params <= in_params ;
                         end if ;
-                        future.buf_b_ready <= '0' ;
+                        future.wfsm <= WRITE_DATA ;
                     end if ;
                     future.dsss_mode <= dsss_params_valid ;
-                    future.wfsm <= WRITE_DATA ;
                 end if ;
 
             when WRITE_DATA =>
