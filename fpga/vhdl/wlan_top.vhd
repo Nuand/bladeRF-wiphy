@@ -179,8 +179,6 @@ architecture arch of wlan_top is
     signal tx_wlan_fifo_empty   :  std_logic ;
     signal bb                   :  wlan_sample_t ;
     signal done                 :  std_Logic ;
-    signal scaled_out_i         :  signed(11 downto 0);
-    signal scaled_out_q         :  signed(11 downto 0);
 
     function NULL_RX_STATE return state_rx_t is
         variable rv : state_rx_t;
@@ -408,10 +406,8 @@ begin
 
     tx_idle <= '1' when (current_tx_state.fsm /= IDLE) else '0' ;
 
-    scaled_out_i <= to_signed( to_integer(bb.i/2 - bb.i/8 - bb.i/16), 12 ) ;
-    out_i <= scaled_out_i(11) & scaled_out_i(11) & scaled_out_i(11) & scaled_out_i(11) & scaled_out_i;
-    scaled_out_q <= to_signed( to_integer(bb.q/2 - bb.q/8 - bb.q/16), 12 ) ;
-    out_q <= scaled_out_q(11) & scaled_out_q(11) & scaled_out_q(11) & scaled_out_q(11) & scaled_out_q;
+    out_i <= resize(shift_right(bb.i, 2), 16);
+    out_q <= resize(shift_right(bb.q, 2), 16);
     out_valid <= bb.valid;
 
     rx_fifo_data <= current_rx_state.rx_word ;
