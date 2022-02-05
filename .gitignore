@@ -1,0 +1,7 @@
+.vscode*/
+bladeRF-wiphy.code-workspace
+fpga/ip/altera/fft64/fft64.sopcinfo
+fpga/ip/altera/fft64/fft64/
+fpga/ip/altera/viterbi_decoder/viterbi_decoder.sopcinfo
+fpga/ip/altera/viterbi_decoder/viterbi_decoder/
+fpga/ip/altera/wlan_pll/wlan_pll/
