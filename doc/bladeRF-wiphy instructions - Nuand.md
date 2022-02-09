@@ -188,8 +188,14 @@ Ensure the bladeRF 2.0 micro xA9 is running a firmware version of at least `v2.4
 
 There are several moving parts that all need to be loaded and running simultaneously including `bladeRF-mac80211_hwsim`, `bladeRF-linux-mac80211`, and `hostapd` (if intending to run in AP mode).
 
-These commands have to repeated after every system reboot. The goal of the following commands is to load the `mac80211_hwsim` kernel module, create the main network interface, and ultimately assign it an IP, routes, monitor mode interface, and DHCP server. This page assumes the `mac80211_hwsim` network interface is called `wlan0`, however things may be different on different systems. Use `ifconfig` before and after calling `insmod` to find the name of the `mac80211_hwsim` network interface.
+These commands have to repeated after every system reboot. The goal of the following commands is to 
+1. load the `mac80211_hwsim` kernel module, 
+2. create the main network interface, 
+3. assign it an IP and routes, 
+4. setup the monitor mode interface
+5. start a DHCP server. 
 
+This page assumes the `mac80211_hwsim` network interface is called `wlan0`, however things may be different on different systems. 
 
 ### Load the pre-requisite kernel modules
 
