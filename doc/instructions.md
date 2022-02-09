@@ -21,6 +21,7 @@ To run bladeRF-wiphy on the bladeRF 2.0 micro xA9 so it can function with mac802
 
 Consider creating a directory such as `~/wiphy-build/` for fetching the following subsections’ repositories into. In the end, the directory hierarchy of `~/wiphy-build/` should look (approximately) as follows:
 
+```
 wiphy-build/
  ├── bladeRF
  ├── bladeRF-linux-mac80211
@@ -28,6 +29,7 @@ wiphy-build/
  ├── bladeRF-net
  ├── bladeRF-wiphy
  └── hostap
+```
 
 The first step then is to create `~/wiphy-build/`:
 
@@ -53,7 +55,9 @@ mkdir host/build
 cd host/build
 cmake ../
 make -j4
-sudo make install && sudo ldconfig
+sudo make install
+sudo ldconfig
+cd ../..
 ```
 
 For more instructions and troubleshooting build `libbladeRF` and the `bladeRF` tools from source take a look at: [https://github.com/Nuand/bladeRF/wiki/Getting-Started%3A-Linux#Building_bladeRF_libraries_and_tools_from_source](https://github.com/Nuand/bladeRF/wiki/Getting-Started%3A-Linux#Building_bladeRF_libraries_and_tools_from_source)
@@ -87,6 +91,9 @@ cmake ../
 popd  
 cd hdl/quartus/  
 ./build_bladerf.sh -b bladeRF-micro -r wlan -s A9
+
+cd $( ls -td wlanxA9* | head -1 )
+sudo install -D wlanxA9.rbf /usr/share/Nuand/bladeRF/
 ```
 
 ### Build bladeRF-mac80211_hwsim
@@ -98,6 +105,8 @@ cd ~/wiphy-build/
 git clone https://github.com/Nuand/bladeRF-mac80211_hwsim  
 cd bladeRF-mac80211_hwsim  
 make -j4  
+sudo make install
+sudo ldconfig
 cd ..
 ```
 
@@ -116,12 +125,15 @@ cd ~/wiphy-build/
 git clone https://github.com/Nuand/bladeRF-linux-mac80211  
 cd bladeRF-linux-mac80211/  
 make -j14  
+sudo make install
+sudo ldconfig
 cd ..
 ```
 
 ### Build hostapd
 
-Compile `hostapd` (currently tested with commit hash `1759a8e3f36a40b20e7c7df06c6d1afc5d1c30c7`) using the following instructions. The reference `hostapd.conf` tested with bladeRF-wiphy can be fetched with `wget`. Before running `hostapd`, verify `hostapd.conf` to ensure operation is permitted and suitable for your domain, and channel availability.
+Compile `hostapd` (currently tested with commit hash `1759a8e3f36a40b20e7c7df06c6d1afc5d1c30c7`) using the following instructions. 
+
 
 ```
 cd ~/wiphy-build/
@@ -130,10 +142,23 @@ cd hostap
 git reset --hard 1759a8e3f36a40b20e7c7df06c6d1afc5d1c30c7  
 cd hostapd  
 cp defconfig .config  
-make -j4  
-wget https://nuand.com/downloads/hostapd.conf -O hostapd.conf  
+make -j4
+sudo make install  
 cd ..
 ```
+
+The reference `hostapd.conf` tested with bladeRF-wiphy can be fetched with `wget`. 
+```
+# wget https://nuand.com/downloads/hostapd.conf -O hostapd.conf  
+```
+
+Before running `hostapd`, verify `hostapd.conf` to ensure operation is permitted and suitable for your domain, and channel availability.  Once you have modified `hostapd.conf` appropriately, copy it into place:
+```
+sudo install -D -v hostapd.conf /etc/hostapd/hostapd.conf
+```
+
+
+
 
 ### Fetch bladeRF-net (optional)
 
@@ -249,7 +274,7 @@ The remaining steps should generally be done in the following order:
 
 ```
 sudo bash <<EOF
-# Set MAC bladeRF-wiphy address 
+# Set bladeRF-wiphy MAC address 
 ifconfig wlan0 down
 ifconfig wlan0 hw ether 70:B3:D5:7D:80:01
 ifconfig wlan0 up
@@ -286,21 +311,15 @@ You should only need to perform the actions in this section after reboots, or ri
 Either fetch the `wlanxA9.rbf` file from [https://www.nuand.com/fpga_images/](https://www.nuand.com/fpga_images/) or build the RBF. Load the bladeRF 2.0 micro xA9 RBF containing the bladeRF-wiphy 802.11 modem by changing to the directory where you either downloaded or built the `wlanxA9` file and using the bladeRF command-line tool, for example
 
 ```
-cd ~/wiphy-build
-pushd bladeRF/hdl/quartus/wlanxA9-2022-02-05_16.26.21
-bladeRF-cli -l wlanxA9.rbf
-popd
+bladeRF-cli -l /usr/share/Nuand/bladeRF/wlanxA9.rbf
 ```
 
 ### Run bladeRF-linux-mac80211
 
-`bladeRF-linux-mac80211` is the user mode application that controls and interfaces with the bladeRF and netlink socket, and must remain running for bladeRF-wiphy to run. These commands should be run (potentially in another terminal):
+`bladeRF-linux-mac80211` is the user mode application that controls and interfaces with the bladeRF and netlink socket, and must remain running for bladeRF-wiphy to run. This command should be run (potentially in another terminal):
 
 ```
-cd ~/wiphy-build
-pushd bladeRF-linux-mac80211
-sudo ./bladeRF-linux-mac80211
-popd
+bladeRF-linux-mac80211
 ```
 
 If you wish to use a non-starndard frequency, use command line argument -f and specify the frequency in MHz, e.g. 2.412GHz would require `-f 2412`. 
@@ -310,15 +329,12 @@ If you wish to use a non-starndard frequency, use command line argument -f and s
 
 If you wish to run an Access Point, run `hostapd`.
 
-Review `hostapd.conf` and ensure the configuration is correct for your region and application.
+Before starting `hostapd`, review `/etc/hostapd/hostapd.conf` and ensure the configuration is correct for your region and application.
 
-**NOTE:** By default, `hostapd.conf` creates an open SSID.  
+**NOTE:** The default bladeRF-wiphy `hostapd.conf` creates an open SSID named `bladeRF-net`.  
 
 ```
-cd ~/wiphy-build
-pushd hostap/hostapd  
-sudo ./hostapd hostapd.conf
-popd
+sudo hostapd /etc/hostapd/hostapd.conf
 ```
 
 In yet another terminal, wait a moment after launching hostpad and restart the DHCP server.
