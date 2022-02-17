@@ -10,6 +10,28 @@ author:
 > ## Excerpt
 > Instructions to compile, install, and run bladeRF-wiphy
 
+- [bladeRF-wiphy instructions - Nuand](#bladerf-wiphy-instructions---nuand)
+  - [Compile bladeRF-wiphy and dependencies](#compile-bladerf-wiphy-and-dependencies)
+    - [Compile libbladeRF](#compile-libbladerf)
+    - [Synthesize bladeRF-wiphy (optional)](#synthesize-bladerf-wiphy-optional)
+    - [Build bladeRF-mac80211_hwsim](#build-bladerf-mac80211_hwsim)
+    - [Build bladeRF-linux-mac80211](#build-bladerf-linux-mac80211)
+    - [Build hostapd](#build-hostapd)
+    - [Fetch bladeRF-net (optional)](#fetch-bladerf-net-optional)
+    - [Setup a DHCP server for STAs (optional)](#setup-a-dhcp-server-for-stas-optional)
+  - [Running bladeRF-wifi](#running-bladerf-wifi)
+    - [Load the pre-requisite kernel modules](#load-the-pre-requisite-kernel-modules)
+    - [Load the `mac80211_hwsim` kernel module](#load-the-mac80211_hwsim-kernel-module)
+    - [Configure the network interface](#configure-the-network-interface)
+    - [Load the FPGA](#load-the-fpga)
+    - [Run bladeRF-linux-mac80211](#run-bladerf-linux-mac80211)
+    - [Run hostapd](#run-hostapd)
+    - [Launch bladeRF-net (optional)](#launch-bladerf-net-optional)
+  - [Troubleshooting](#troubleshooting)
+  - [Miscellaneous commands](#miscellaneous-commands)
+  - [Theory of operation](#theory-of-operation)
+
+
 ---
 Instructions to compile, install, and run bladeRF-wiphy
 
@@ -68,9 +90,11 @@ This step is optional, to skip this step download the synthesized bladeRF-wiphy 
 
 Again ensure the current working directory is `~/wiphy-build/` and fetch the source from the Github repository into `~/wiphy-build/bladeRF-wiphy/`
 
+
 ```
 cd ~/wiphy-build/
 git clone https://github.com/Nuand/bladeRF-wiphy/
+cd ..
 ```
 
 Generate the QSys cores:
@@ -88,13 +112,17 @@ cd ~/wiphy-build/bladeRF
 pushd host  
 mkdir build/  
 cmake ../  
-popd  
-cd hdl/quartus/  
+popd
+
+pushd hdl/quartus/  
 ./build_bladerf.sh -b bladeRF-micro -r wlan -s A9
 
 cd $( ls -td wlanxA9* | head -1 )
-sudo install -D wlanxA9.rbf /usr/share/Nuand/bladeRF/
+sudo install -D -v wlanxA9.rbf /usr/share/Nuand/bladeRF/
+popd
+cd ..
 ```
+
 
 ### Build bladeRF-mac80211_hwsim
 
@@ -106,7 +134,6 @@ git clone https://github.com/Nuand/bladeRF-mac80211_hwsim
 cd bladeRF-mac80211_hwsim  
 make -j4  
 sudo make install
-sudo ldconfig
 cd ..
 ```
 
@@ -120,7 +147,7 @@ sudo apt-get install libssl-dev libnl-genl-3-dev
 
 `bladeRF-linux-mac80211` is the usermode application that controls the bladeRF, and exchanges packets between `libbladeRF` and `mac80211_hwsim` through a netlink socket.
 
-```
+```bash
 cd ~/wiphy-build/
 git clone https://github.com/Nuand/bladeRF-linux-mac80211  
 cd bladeRF-linux-mac80211/  
@@ -140,25 +167,32 @@ cd ~/wiphy-build/
 git clone git://w1.fi/hostap.git  
 cd hostap  
 git reset --hard 1759a8e3f36a40b20e7c7df06c6d1afc5d1c30c7  
-cd hostapd  
+pushd hostapd  
 cp defconfig .config  
 make -j4
 sudo make install  
+popd
 cd ..
 ```
 
-The reference `hostapd.conf` tested with bladeRF-wiphy can be fetched with `wget`. 
+The reference `hostapd.conf` tested with bladeRF-wiphy is stored in the `blade-wiphy` git repo at `etc/hostapd.conf`. Before running `hostapd`, verify `hostapd.conf` to ensure operation is permitted and suitable for your domain, and channel availability.  
+
 ```
-# wget https://nuand.com/downloads/hostapd.conf -O hostapd.conf  
+cd ~/wiphy-build
+pushd bladeRF-wiphy/etc
+editor hostapd.conf
+popd
+cd ..
 ```
 
-Before running `hostapd`, verify `hostapd.conf` to ensure operation is permitted and suitable for your domain, and channel availability.  Once you have modified `hostapd.conf` appropriately, copy it into place:
+Once you have modified `hostapd.conf` appropriately, copy it into place:
 ```
+cd ~/wiphy-build
+pushd bladeRF-wiphy/etc
 sudo install -D -v hostapd.conf /etc/hostapd/hostapd.conf
+popd
+cd ..
 ```
-
-
-
 
 ### Fetch bladeRF-net (optional)
 
@@ -168,6 +202,7 @@ Install the Python Flask module, either through your distributions package manag
 ```
 sudo apt install python3-flask
 ```
+
 or via Python's PIP package manager:
 ```
 pip3 install flask
@@ -189,34 +224,43 @@ If you are intending to run bladerf-wiphy in Access Point mode, and want to conf
 sudo apt-get install isc-dhcp-server
 ```
 
-To setup a `10.254.239.x` subnet for associate STAs, add the following `10.254.239.x` subnet to `/etc/dhcp/dhcpd.conf`:
-
+The reference `dhcpd.conf` tested with bladeRF-wiphy is stored in the `blade-wiphy` git repo at `etc/dhcpd.conf`. Before running `dhcpd`, edit `dhcpd.conf` to set the appropriate address range for clients.  For example, 
+the `10.254.239.x` subnet for associate STAs, ensure these lines are enabled in `/etc/dhcp/dhcpd.conf`:
 ```
 subnet 10.254.239.0 netmask 255.255.255.224 {
  range 10.254.239.10 10.254.239.20;
     }
 ```
+**Note** Be sure to select an address range that does not conflict with your regular network.
 
-**Note** Be sure to select an address range that conflict with your regular network.
-
-
-Tell the DHCP server to listen to DHCP requests on wlan0 (or whatever the network interface name of `bladeRF-mac80211_hwsim`) , by adding the following lines to `/etc/dhcp/dhcpd.conf` :
+To tell the DHCP server to listen to DHCP requests on wlan0 (or whatever the network interface name of `bladeRF-mac80211_hwsim`), ensure these lines are enabled in `/etc/dhcp/dhcpd.conf` :
 
 ```
 INTERFACESv4="wlan0"  
 INTERFACESv6="wlan0"
 ```
 
+Once you have modified `dhcpd.conf` appropriately, copy it into place:
+```
+cd ~/wiphy-build
+pushd bladeRF-wiphy/etc
+sudo install -D -v dhcpd.conf /etc/dhcp/dhcpd.conf
+popd
+cd ..
+```
+
 ## Running bladeRF-wifi
 
-Ensure the bladeRF 2.0 micro xA9 is running a firmware version of at least `v2.4.0`. A quick check is to look at the “Firmware verion” line in the output of `bladeRF-cli -e ver` . Update the bladeRF’s FX3 firmware to v2.4.0 (or later) by `fetching bladeRF_fw_v2.4.0.img` from [https://www.nuand.com/fx3_images/](https://www.nuand.com/fx3_images/) and running `bladeRF-cli -f bladeRF_fw_v2.4.0.img`.
+Ensure the bladeRF 2.0 micro xA9 is running a firmware version of at least `v2.4.0`. A quick check is to look at the “Firmware verion” line in the output of `bladeRF-cli -e ver` . 
+
+If necessary, update the bladeRF’s FX3 firmware to v2.4.0 (or later) by `fetching bladeRF_fw_v2.4.0.img` from [https://www.nuand.com/fx3_images/](https://www.nuand.com/fx3_images/) and running `bladeRF-cli -f bladeRF_fw_v2.4.0.img`.
 
 There are several moving parts that all need to be loaded and running simultaneously including `bladeRF-mac80211_hwsim`, `bladeRF-linux-mac80211`, and `hostapd` (if intending to run in AP mode).
 
 These commands have to repeated after every system reboot. The goal of the following commands is to 
 1. load the `mac80211_hwsim` kernel module, 
 2. create the main network interface, 
-3. assign it an IP and routes, 
+3. assign the interface an IP address and routes, 
 4. setup the monitor mode interface
 5. start a DHCP server. 
 

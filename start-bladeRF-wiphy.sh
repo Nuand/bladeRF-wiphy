@@ -5,10 +5,10 @@
 # Uncomment to debug
 set -x
 
-# Load the kernel modules
-sudo modprobe mac80211  
-sudo modprobe cfg80211
-sudo modprobe mac80211_hwsim
+# # Load the kernel modules
+# sudo modprobe mac80211  
+# sudo modprobe cfg80211
+# sudo modprobe bladeRF_mac80211_hwsim
 
 # Prevent network manager from controlling the interface
 sudo nmcli dev set wlan0 managed false
