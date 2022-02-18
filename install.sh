@@ -3,7 +3,7 @@
 # Script to install bladeRF-wiphy
 #
 set -x          # display lines as they are executed
-# trap read debug # prompt after each line
+# trap read debug # uncomment to prompt after each line
 #
 # Configuration 
 BUILD_DIR=$HOME/wiphy-build-test
@@ -86,12 +86,6 @@ git clone https://github.com/warnes/bladeRF-wiphy/ -b add-doc
 
 
 ### Build & Install bladeRF-mac80211_hwsim
-
-
-##!!!##
-trap read debug # prompt after each line
-##!!!##
-
 cd ${BUILD_DIR}
 git clone https://github.com/warnes-wireless/bladeRF-mac80211_hwsim -b nuand/main
 cd bladeRF-mac80211_hwsim  
@@ -101,9 +95,9 @@ sudo make install
 ### Build & Install bladeRF-linux-mac80211
 
 # Install dependencies
-
 sudo apt-get install libssl-dev libnl-genl-3-dev
 
+# Clone repo, build, and install
 cd ${BUILD_DIR}
 git clone https://github.com/warnes-wireless/bladeRF-linux-mac80211  
 cd bladeRF-linux-mac80211/  
@@ -155,12 +149,17 @@ cd ~/wiphy-build/bladeRF-wiphy/etc
 sudo install -D -v dhcpd.conf /etc/dhcp/dhcpd.conf
 
 
-### Install the bladeRF-wiphy startup script
+## Install the bladeRF-wiphy startup and shutdown scripts
+trap read debug # uncomment to prompt after each line
 cd ${BUILD_DIR}/bladeRF-wiphy/bin
-sudo install -D start-bladeRF-wiphy.sh /usr/local/bin
+sudo install -Dv start-bladeRF-wiphy.sh /usr/local/bin/start-bladeRF-wiphy.sh
+sudo install -Dv stop-bladeRF-wiphy.sh  /usr/local/bin/stop-bladeRF-wiphy.sh
 
 
+set +x          # display lines as they are executed
 ### All Done!
+echo
+echo
 echo "---------------------------------------------------"
 echo "bladeRF-wiphy installation complete"
 echo
@@ -169,3 +168,5 @@ echo "To stop run:  /usr/local/bin/stop-bladeRF-wiphy.sh"
 echo
 echo "You may now remove the build directory '$BUILD_DIR'"
 echo "---------------------------------------------------"
+echo
+echo
