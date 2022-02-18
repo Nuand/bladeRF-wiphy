@@ -72,7 +72,7 @@ Ensure `~/wiphy-build/` is the current working directory then git clone the `bla
 ```
 cd ~/wiphy-build/
 git clone https://github.com/Nuand/bladeRF
-cd ~/bladeRF
+cd bladeRF
 mkdir host/build
 cd host/build
 cmake ../
