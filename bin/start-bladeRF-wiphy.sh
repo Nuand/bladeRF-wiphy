@@ -14,7 +14,10 @@ sudo modprobe bladeRF_mac80211_hwsim
 read -p "Press <RETURN> to contiue." prompt 
 
 # Prevent network manager from controlling the interface
-sudo nmcli dev set wlan0 managed false
+if [ $(env nmcli >& /dev/null)]; then    
+    env nmcli && sudo nmcli dev set wlan0 managed false
+fi
+
 
 # Get the mac address of the physical ethernet adaptor
 MACADDR=$( LANG=C ip -o link show | egrep -v 'wlan|mon|loop' | awk '{print $17}' )
@@ -49,7 +52,8 @@ echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
 sudo iptables -t nat -A POSTROUTING -s 10.254.239.1/16 -o enp0s5 -j MASQUERADE
 
 # Load the FPGA firmware
-bladeRF-cli -l /usr/share/Nuand/bladeRF/wlanxA9.rbf
+bladeRF-cli -f /usr/share/Nuand/bladeRF/bladeRF_fw_latest.img
+bladeRF-cli -l /usr/share/Nuand/bladeRF/wlanxA9-latest.rbf
 
 # Start all components in separate terminals
 gnome-terminal -t /var/log -- tail -f /var/log/*
@@ -69,12 +73,4 @@ cat <<EOF
     -----------------------------------------
 
 EOF
-
-
-read -p "Press <RETURN> to shut down AP" prompt 
-
-#
-# -----
-#
-
 
