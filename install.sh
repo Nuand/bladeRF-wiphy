@@ -2,7 +2,8 @@
 #
 # Script to install bladeRF-wiphy
 #
-set -x          # display lines as they are executed
+set -e          # Stop on errors
+set -x          # Display lines as they are executed
 # trap read debug # uncomment to prompt after each line
 #
 # Configuration 
@@ -18,7 +19,7 @@ cd ${BUILD_DIR}
 
 # Install dependencies
 
-sudo apt-get install libusb-1.0-0-dev \
+sudo apt -y install libusb-1.0-0-dev \
   libusb-1.0-0 \
   build-essential \
   cmake \
@@ -29,10 +30,20 @@ sudo apt-get install libusb-1.0-0-dev \
   git \
   wget
 
-# Clone the `bladeRF` Github repository into `${BUILD_DIR}bladeRF` 
+VENDOR="$(lsb_release -si)"
+
+# Special case for Raspberry Pi
+if [[ "${VENDOR}" -eq "Raspbian" ]]; then
+  sudo apt install -y raspberrypi-kernel-headers
+else
+  sudo apt install -y kernel-headers
+fi
+
+
+# Clone the `bladeRF` Github repository into `${BUILD_DIR}/bladeRF` 
 
 cd ${BUILD_DIR}
-git clone https://github.com/Nuand/bladeRF
+git clone --depth 1 https://github.com/Nuand/bladeRF
 
 # Build libbladeRF
 
@@ -49,8 +60,8 @@ sudo ldconfig
 cd ${BUILD_DIR}
 mkdir firmware
 cd firmware
-wget https://www.nuand.com/fx3/bladeRF_fw_latest.img
-wget https://www.nuand.com/fpga/wlanxA9-latest.rbf
+wget https://www.nuand.com/fx3/bladeRF_fw_latest.img -o bladeRF_fw_latest.img
+wget https://www.nuand.com/fpga/wlanxA9-latest.rbf   -o wlanxA9-latest.rbf 
 
 sudo install -D -v bladeRF_fw_latest.img /usr/share/Nuand/bladeRF
 sudo install -D -v wlanxA9-latest.rbf /usr/share/Nuand/bladeRF
@@ -61,7 +72,7 @@ sudo install -D -v wlanxA9-latest.rbf /usr/share/Nuand/bladeRF
 # Fetch bladeRF-wiphy source from Github
 
 cd ${BUILD_DIR}
-git clone https://github.com/warnes/bladeRF-wiphy/ -b add-doc
+git clone --depth 1 https://github.com/warnes/bladeRF-wiphy/ -b add-doc
 
 # # Generate the QSys cores:
 #
@@ -84,22 +95,28 @@ git clone https://github.com/warnes/bladeRF-wiphy/ -b add-doc
 # sudo install -D -v wlanxA9.rbf /usr/share/Nuand/bladeRF/
 # ```
 
-
 ### Build & Install bladeRF-mac80211_hwsim
 cd ${BUILD_DIR}
-git clone https://github.com/warnes-wireless/bladeRF-mac80211_hwsim -b nuand/main
-cd bladeRF-mac80211_hwsim  
+
+# TODO: Use kernel version instead of OS Vector for this.
+if [[ "${VENDOR}" -eq "Raspbian" ]]; then
+  git clone  https://github.com/warnes-wireless/bladeRF-mac80211_hwsim -b use_kmod
+else 
+  git clone  https://github.com/warnes-wireless/bladeRF-mac80211_hwsim -b use_kmod_5.13_plus
+fi
+
+cd bladeRF-mac80211_hwsim
 make -j4  
 sudo make install
 
 ### Build & Install bladeRF-linux-mac80211
 
 # Install dependencies
-sudo apt-get install libssl-dev libnl-genl-3-dev
+sudo apt install -y libssl-dev libnl-genl-3-dev
 
 # Clone repo, build, and install
 cd ${BUILD_DIR}
-git clone https://github.com/warnes-wireless/bladeRF-linux-mac80211  
+git clone --depth 1 https://github.com/warnes-wireless/bladeRF-linux-mac80211  
 cd bladeRF-linux-mac80211/  
 make -j14  
 sudo make install
@@ -109,7 +126,7 @@ sudo ldconfig
 
 # Compile `hostapd` (currently tested with commit hash `1759a8e3f36a40b20e7c7df06c6d1afc5d1c30c7`)
 cd ${BUILD_DIR}
-git clone git://w1.fi/hostap.git  
+git clone git://w1.fi/hostap.git
 cd hostap  
 git reset --hard 1759a8e3f36a40b20e7c7df06c6d1afc5d1c30c7  
 
@@ -120,48 +137,46 @@ sudo make install
 
 # Get the `hostapd.conf` tested with bladeRF-wiphy
 
+cd ${BUILD_DIR}/bladeRF-wiphy/etc
 echo "Make any changes to hostapd.conf HERE."
-# cd ~/wiphy-build/bladeRF-wiphy/etc
 # editor hostapd.conf
 
 # Once you have modified `hostapd.conf` appropriately, copy it into place:
-cd ~/wiphy-build/bladeRF-wiphy/etc
+cd ${BUILD_DIR}/bladeRF-wiphy/etc
 sudo install -D -v hostapd.conf /etc/hostapd/hostapd.conf
 
 ### Build & Install bladeRF-net (optional)
 
 # Install python flask
-sudo apt install python3-flask
+sudo apt install -y python3-flask
 
 # Install the flask code and the logo image
 cd ${BUILD_DIR}
-git clone https://github.com/Nuand/bladeRF-net  
+git clone --depth 1 https://github.com/Nuand/bladeRF-net  
 cd bladeRF-net  
 wget https://nuand.com/images/birb.png -O images/birb.png  
 
 ### Install & Setup a DHCP server for STAs (optional)
 
 # Install DHCP server
-sudo apt-get install isc-dhcp-server
+sudo apt install -y isc-dhcp-server
 
 # Install DHCP server configuration file 
-cd ~/wiphy-build/bladeRF-wiphy/etc
+cd ${BUILD_DIR}/bladeRF-wiphy/etc
 sudo install -D -v dhcpd.conf /etc/dhcp/dhcpd.conf
 
 
 ## Install the bladeRF-wiphy startup and shutdown scripts
-trap read debug # uncomment to prompt after each line
 cd ${BUILD_DIR}/bladeRF-wiphy/bin
 sudo install -Dv start-bladeRF-wiphy.sh /usr/local/bin/start-bladeRF-wiphy.sh
 sudo install -Dv stop-bladeRF-wiphy.sh  /usr/local/bin/stop-bladeRF-wiphy.sh
 
-
-set +x          # display lines as they are executed
+set +x          # Don't display lines as they are executed
 ### All Done!
 echo
 echo
 echo "---------------------------------------------------"
-echo "bladeRF-wiphy installation complete"
+echo "         bladeRF-wiphy installation complete"
 echo
 echo "To start run: /usr/local/bin/start-bladeRF-wiphy.sh"
 echo "To stop run:  /usr/local/bin/stop-bladeRF-wiphy.sh"
