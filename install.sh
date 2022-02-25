@@ -30,10 +30,22 @@ sudo apt -y install libusb-1.0-0-dev \
   git \
   wget
 
-VENDOR="$(lsb_release -si)"
+MACHINE="$(uname -m)"
+case $MACHINE in
+  x86*)
+    PLATFORM="x86"
+    ;;
+  aarch64* | armv7l)
+    PLATFORM="rpi"
+    ;;
+  *)
+    echo "Unknown Architecture"
+    exit -1
+  ;;
+esac
 
 # Special case for Raspberry Pi
-if [[ "${VENDOR}" -eq "Raspbian" ]]; then
+if [[ ${PLATFORM} == "rpi" ]]; then
   sudo apt install -y raspberrypi-kernel-headers
 else
   sudo apt install -y kernel-headers
@@ -101,7 +113,7 @@ git clone --depth 1 https://github.com/warnes/bladeRF-wiphy/ -b add-doc
 cd ${BUILD_DIR}
 
 # TODO: Use kernel version instead of OS Vector for this.
-if [[ "${VENDOR}" -eq "Raspbian" ]]; then
+if [[ ${PLATFORM} == "rpi" ]]; then
   git clone  https://github.com/warnes-wireless/bladeRF-mac80211_hwsim -b use_kmod
 else 
   git clone  https://github.com/warnes-wireless/bladeRF-mac80211_hwsim -b use_kmod_5.13_plus
