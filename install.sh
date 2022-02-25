@@ -28,7 +28,7 @@ sudo apt -y install libusb-1.0-0-dev \
   libtecla-dev \
   pkg-config \
   git \
-  wget
+  curl
 
 MACHINE="$(uname -m)"
 case $MACHINE in
@@ -48,7 +48,7 @@ esac
 if [[ ${PLATFORM} == "rpi" ]]; then
   sudo apt install -y raspberrypi-kernel-headers
 else
-  sudo apt install -y kernel-headers
+  sudo apt install -y linux-headers-generic
 fi
 
 
