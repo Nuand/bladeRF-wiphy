@@ -7,10 +7,10 @@ set -x          # Display lines as they are executed
 # trap read debug # uncomment to prompt after each line
 #
 # Configuration 
-export BUILD_DIR=${BUILD_DIR:-$HOME/wiphy-build-test}
+export BUILD_DIR=${BUILD_DIR:-/tmp/build-bladeRF-wiphy}
 
 # The first step then is to create `${BUILD_DIR}`:
-
+rm -rf ${BUILD_DIR}
 mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
 
@@ -76,9 +76,9 @@ curl https://www.nuand.com/fx3/bladeRF_fw_latest.img -o bladeRF_fw_latest.img
 curl https://www.nuand.com/fpga/v0.14.0/hostedxA9.rbf -o hostedxA9-latest.rbf
 curl https://www.nuand.com/fpga/wlanxA9-latest.rbf   -o wlanxA9-latest.rbf 
 
-sudo install -D -v bladeRF_fw_latest.img /usr/share/Nuand/bladeRF/bladeRF_fw_latest.img
-sudo install -D -v hostedxA9-latest.rbf  /usr/share/Nuand/bladeRF/hostedxA9-latest.rbf
-sudo install -D -v wlanxA9-latest.rbf    /usr/share/Nuand/bladeRF/wlanxA9-latest.rbf
+sudo install -D -v bladeRF_fw_latest.img /etc/Nuand/bladeRF/bladeRF_fw_latest.img
+sudo install -D -v hostedxA9-latest.rbf  /etc/Nuand/bladeRF/hostedxA9-latest.rbf
+sudo install -D -v wlanxA9-latest.rbf    /etc/Nuand/bladeRF/wlanxA9-latest.rbf
 
 
 ### Compile bladeRF-wiphy
