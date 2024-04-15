@@ -91,7 +91,7 @@ architecture arch of wlan_top is
                       READ_PAYLOAD, READ_BLANKS, VALID_ACK, SEND_ACK, WAIT_TO_TX, WAIT_TO_ACK,
                       WAIT_FOR_ACK, WAIT_TO_RETRY_TX, VALID_RETRY_VECTOR,
                       READ_RETRY_FIFO, NO_ACK_RECEIVED, GOOD_ACK_RECEIVED, WRITE_ACK_TO_FIFO);
-    type fsm_rx_t is (IDLE, TX_ACK_HEADER, TX_ACK_WRITE, READ_VECTOR,
+    type fsm_rx_t is (IDLE, TX_ACK_HEADER, TX_ACK_WRITE, READ_VECTOR, READ_VECTOR_2,
                       WAIT_TO_WRITE_HEADER, WRITE_HEADER, WRITE_PAYLOAD,
                       PAD_ZERO);
 
@@ -107,6 +107,7 @@ architecture arch of wlan_top is
         read_payload         :  std_logic ;
         packet_control       :  packet_control_t ;
         fifo_tx_ack_rreq     :  std_logic ;
+        actual_len           :  natural range 0 to 4096;
     end record;
 
     type state_tx_t is record
@@ -193,6 +194,7 @@ architecture arch of wlan_top is
         rv.rx_word := (others => '0' ) ;
         rv.read_payload := '0' ;
         rv.fifo_tx_ack_rreq := '0';
+        rv.actual_len := 0;
         return rv ;
     end function ;
 
@@ -468,11 +470,15 @@ begin
                 end if;
 
             when READ_VECTOR =>
-                future_rx_state.length <= rx_vector.length - 2 ; -- 2 for SERVICE, and 4 for FCS
+                future_rx_state.actual_len <= rx_vector.length - 2; -- 2 for SERVICE, and 4 for FCS
                 future_rx_state.header(23  downto 0 ) <= x"0" & bandwidth_to_lv(rx_vector.bandwidth) & x"0001";
                 future_rx_state.header(31  downto 24) <= x"0" & datarate_to_lv(rx_vector.datarate);
-                future_rx_state.header(47  downto 32) <= std_logic_vector(to_unsigned(rx_vector.length - 2, 16));
                 future_rx_state.header(127 downto 48) <= ( others => '0' );
+                future_rx_state.fsm <= READ_VECTOR_2;
+
+            when READ_VECTOR_2 =>
+                future_rx_state.length <= current_rx_state.actual_len;
+                future_rx_state.header(47  downto 32) <= std_logic_vector(to_unsigned(current_rx_state.actual_len, 16));
                 if( rx_packet_ready = '1' ) then
                    future_rx_state.fsm <= WRITE_HEADER ;
                 else
