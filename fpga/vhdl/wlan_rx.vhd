@@ -231,10 +231,14 @@ begin
     equalized_q <= phase_corr_sample.q( 15 downto 0 ) ;
     equalized_valid <= phase_corr_sample.valid;
 
-    process(all)
+    -- Assert immediately even if the processing clock is stopped; release only
+    -- after three processing-clock edges. Keep this reset in that domain.
+    process(clock, reset40m)
     begin
-        if( rising_edge( clock ) ) then
-            rst_rr <= reset40m & rst_rr(rst_rr'high downto 1);
+        if reset40m = '1' then
+            rst_rr <= (others => '1');
+        elsif rising_edge(clock) then
+            rst_rr <= '0' & rst_rr(rst_rr'high downto 1);
         end if;
     end process;
     reset <= rst_rr(0);
@@ -244,10 +248,12 @@ begin
         lpm_width       =>  32,
         lpm_widthu      =>  5,
         lpm_numwords    =>  32,
-        lpm_showahead   =>  "ON"
+        lpm_showahead   =>  "ON",
+        write_aclr_synch => "ON",
+        read_aclr_synch  => "ON"
       )
       port map (
-        aclr            => reset,
+        aclr            => reset40m,
 
         wrclk           => clock40m,
         wrreq           => bb_valid and not wfull,
@@ -271,9 +277,9 @@ begin
 
 
 
-    process(clock40m, reset)
+    process(clock40m, reset40m)
     begin
-        if( reset = '1' ) then
+        if( reset40m = '1' ) then
           r_bb_i <= ( others => '0' ) ;
           r_bb_q <= ( others => '0' ) ;
           r_bb_valid <= '0';
@@ -653,7 +659,9 @@ begin
         lpm_width       =>  8,
         lpm_widthu      =>  11,
         lpm_numwords    =>  1600,
-        lpm_showahead   =>  "ON"
+        lpm_showahead   =>  "ON",
+        write_aclr_synch => "ON",
+        read_aclr_synch  => "ON"
       )
       port map (
         aclr            => reset or fifo_rst,
@@ -704,9 +712,12 @@ begin
 
     process(all)
     begin
-        if( reset = '1' ) then
+        if( reset40m = '1' ) then
             rx_vector_rr <= ( others => '0' ) ;
+            ack_valid_rr <= ( others => '0' ) ;
             acked_packet_rr <= ( others => '0' ) ;
+            ack_valid <= '0';
+            acked_packet <= '0';
         elsif( rising_edge( clock40m ) ) then
             rx_vector_rr <= rx_vector_r(0) & rx_vector_rr(3 downto 1) ;
 
