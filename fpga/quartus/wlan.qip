@@ -5,6 +5,7 @@ set_global_assignment -library "wlan_pll" -name VERILOG_FILE [file normalize "..
 set_global_assignment -library "wlan_pll" -name QIP_FILE [file normalize "../../../../../bladeRF-wiphy/fpga/ip/altera/wlan_pll/wlan_pll/wlan_pll.qip"]
 
 set modelsim 0
+set_global_assignment -name SDC_FILE [file normalize [file join $::quartus(qip_path) wlan.sdc]]
 
 # Nuand WLAN IP files
 source [file normalize [file join $::quartus(qip_path) ../common/wlan_files.tcl]]

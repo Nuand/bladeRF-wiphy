@@ -223,6 +223,11 @@ architecture arch of wlan_rx is
     signal f_bb_i            :   signed(15 downto 0) ;
     signal f_bb_q            :   signed(15 downto 0) ;
     signal rst_rr            :   std_logic_vector(2 downto 0);
+    attribute preserve : boolean;
+    attribute altera_attribute : string;
+    attribute preserve of rst_rr : signal is true;
+    attribute altera_attribute of rst_rr : signal is
+        "-name SYNCHRONIZER_IDENTIFICATION ""FORCED IF ASYNCHRONOUS""";
     signal reset             :   std_logic ;
     signal fifo_rst          :   std_logic ;
 begin
